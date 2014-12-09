@@ -7,16 +7,21 @@ require 'mail'
 require 'csv'
 require 'socket'
 
-	#def read(url)
-        #        CSV.new(open(url), :headers => :first_row).each do |line|
-        #          puts line
-        #          puts line[0]
-        #          puts line['FEB11']
-        #        end
-        #end
+calltype = ARGV[0]
 
-        #read("http://localhost:9000/haproxy_stats;csv")
+if calltype == "http"
+	puts "web"
+	def read(url)
+		v = ""
+                CSV.new(open(url, http_basic_authentication: ["admin", "passwordhere"]), :headers => :first_row).each do |line|
+          		v = v + line
+                end
+        end
 
+        read("http://localhost:9000/haproxy_stats;csv")
+
+else
+	puts "socket"
         socket = UNIXSocket.new("/tmp/haproxy")
         socket.puts("show stat")
 
@@ -27,8 +32,11 @@ require 'socket'
           v = v + line
         end
         #puts v
+end
         csv_text = v
         csv = CSV.parse(csv_text, :headers => true)
+	puts csv.headers
+	puts csv.headers.count
         csv.each do |row|
                 pxname = row["# pxname"]
                 svname = row["svname"]
