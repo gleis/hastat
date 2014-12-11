@@ -6,19 +6,18 @@ require 'open-uri'
 require 'mail'
 require 'csv'
 require 'socket'
+require 'curb'
 
 calltype = ARGV[0]
 
 if calltype == "http"
 	puts "web"
-	def read(url)
-		v = ""
-                CSV.new(open(url, http_basic_authentication: ["admin", "passwordhere"]), :headers => :first_row).each do |line|
-          		v = v + line
-                end
-        end
-
-        read("http://localhost:9000/haproxy_stats;csv")
+	c = Curl::Easy.new("http://localhost:9000/haproxy_stats;csv")
+	c.http_auth_types = :basic
+	c.username = 'admin'
+	c.password = 'passwordhere'
+	c.perform
+	v = c.body
 
 else
 	puts "socket"
